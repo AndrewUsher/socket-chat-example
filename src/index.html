@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Socket.IO chat</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font: 13px Helvetica, Arial;
+      }
+      form {
+        max-width: 1600px;
+        margin: 0 auto;
+      }
+      form input {
+        border: 2px solid #202124;
+        padding: 10px;
+        width: 80%;
+      }
+      form button {
+        background: rgb(130, 224, 255);
+        border: none;
+        padding: 10px;
+      }
+      #messages {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+      }
+      #messages li {
+        padding: 5px 10px;
+      }
+      #messages li:nth-child(odd) {
+        background: #eee;
+      }
+    </style>
+  </head>
+  <body>
+    <ul id="messages"></ul>
+    <form action="">
+      <input id="message" autocomplete="off" />
+      <button>Send</button>
+    </form>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      const MESSAGES_CONTAINER = document.getElementById('messages')
+      const socket = io()
+      const GET_PREVIOUS_MESSAGES = 'GET_PREVIOUS_MESSAGES'
+      const CURRENT_MESSAGES = 'CURRENT_MESSAGES'
+
+      const handleSubmit = e => {
+        e.preventDefault()
+        const messageInput = document.getElementById('message')
+        socket.emit('chat message', messageInput.value)
+        messageInput.value = ''
+      }
+
+      const handleNewMessage = newMessage => {
+        const newMessageElement = document.createElement('li')
+        newMessageElement.innerText = newMessage
+        MESSAGES_CONTAINER.appendChild(newMessageElement)
+      }
+
+      document.querySelector('form').addEventListener('submit', handleSubmit)
+      socket.on('chat message', handleNewMessage)
+      socket.on(CURRENT_MESSAGES, currentMessages => {
+        console.log(currentMessages)
+        const fragment = document.createDocumentFragment()
+        const newElements = currentMessages.map(message => {
+          const newMessageElement = document.createElement('li')
+          newMessageElement.innerText = message
+          fragment.append(newMessageElement)
+        })
+        MESSAGES_CONTAINER.append(fragment)
+      })
+    </script>
+  </body>
+</html>
